@@ -21,6 +21,8 @@ class Clustering:
         self.kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init).fit(self.df)
         self.df["cluster"]= self.kmeans.labels_
         self.df.reset_index(level=0, inplace=True)
+        self.df["code"]=self.df["country"].str[:3]
+        self.df["code"] = self.df["code"].str.upper()
         return self.df
 
     def drawScatter(self):
@@ -42,9 +44,9 @@ class Clustering:
 
         data = [dict(
             type='choropleth',
-            locations=self.df['CODE'],
-            z=self.df['GDP (BILLIONS)'],
-            text=self.df['COUNTRY'],
+            locations=self.df['code'],
+            z=self.df['cluster'],
+            text=self.df['country'],
             colorscale=[[0, "rgb(5, 10, 172)"], [0.35, "rgb(40, 60, 190)"], [0.5, "rgb(70, 100, 245)"], \
                         [0.6, "rgb(90, 120, 245)"], [0.7, "rgb(106, 137, 247)"], [1, "rgb(220, 220, 220)"]],
             autocolorscale=False,
@@ -56,23 +58,23 @@ class Clustering:
                 )),
             colorbar=dict(
                 autotick=False,
-                tickprefix='$',
-                title='GDP<br>Billions US$'),
+                #tickprefix='$',
+                title='Cluster Group'),
         )]
 
         layout = dict(
-            title='2014 Global GDP<br>Source:\
-                    <a href="https://www.cia.gov/library/publications/the-world-factbook/fields/2195.html">\
-                    CIA World Factbook</a>',
+            title='K-Means Clustering Visualization',
             geo=dict(
-                showframe=False,
-                showcoastlines=False,
+                showframe=True,
+                showcoastlines=True,
                 projection=dict(
                     type='Mercator'
                 )
             )
         )
-
+        py.sign_in("ilanamor", "PuJAQXTCGxrq3pgAHvqo")
         fig = dict(data=data, layout=layout)
         py.iplot(fig, validate=False, filename='d3-world-map')
+        py.image.save_as(fig, filename="D:\documents\users\ilanamor\Documents\\bla.png")
+
 
