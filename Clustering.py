@@ -1,7 +1,10 @@
-from sklearn.cluster import KMeans
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.plotly as py
+from PIL import Image
+from sklearn.cluster import KMeans
+
 
 class Clustering:
 
@@ -9,14 +12,20 @@ class Clustering:
     df = pd.DataFrame({})
     n_clusters = 0
     n_init = 0
-    scatter = None
 
     def __init__(self,data,n_clusters, n_init):
         self.df = data
         self.n_clusters = n_clusters
         self.n_init = n_init
 
+    #cluster flow
+    def cluster(self):
+        self.calcKmeans()
+        self.drawScatter()
+        self.horoplethMap()
+        self.ConvertPngToGif()
 
+    #kmeans function
     def calcKmeans(self):
         self.kmeans = KMeans(n_clusters=self.n_clusters, n_init=self.n_init).fit(self.df)
         self.df["cluster"]= self.kmeans.labels_
@@ -25,6 +34,7 @@ class Clustering:
         self.df["code"] = self.df["code"].str.upper()
         return self.df
 
+    #scatter
     def drawScatter(self):
         cm = plt.cm.get_cmap('RdYlBu')
         sc = plt.scatter(x=self.df["Social support"], y=self.df["Generosity"], c=self.df["cluster"])
@@ -32,12 +42,9 @@ class Clustering:
         plt.ylabel("Generosity")
         plt.xlabel("Social support")
         plt.colorbar(sc)
-        self.scatter=plt
-        #plt.show()
-        #plt.savefig("D:\documents\users\ilanamor\Documents\\tmp.png")
-        self.scatter.show()
+        plt.savefig("./scatter.png")
 
-
+    #map
     def horoplethMap(self):
         #username: ilanamor
         # PuJAQXTCGxrq3pgAHvqo
@@ -66,7 +73,7 @@ class Clustering:
             title='K-Means Clustering Visualization',
             geo=dict(
                 showframe=True,
-                showcoastlines=True,
+                showcoastlines=False,
                 projection=dict(
                     type='Mercator'
                 )
@@ -75,6 +82,21 @@ class Clustering:
         py.sign_in("ilanamor", "PuJAQXTCGxrq3pgAHvqo")
         fig = dict(data=data, layout=layout)
         py.iplot(fig, validate=False, filename='d3-world-map')
-        py.image.save_as(fig, filename="D:\documents\users\ilanamor\Documents\\bla.png")
+        py.image.save_as(fig, filename="./map.png")
 
+    #convert images from png to gif
+    def ConvertPngToGif(self):
+
+        scatter = Image.open('./scatter.png')
+        map = Image.open('./map.png')
+
+        scatter = scatter.resize((450, 350), Image.ANTIALIAS)
+        scatter.convert('RGB').convert('P', palette=Image.ADAPTIVE)
+        scatter.save('./scatter.gif')
+        os.remove('./scatter.png')
+
+        map = map.resize((450, 350), Image.ANTIALIAS)
+        map.convert('RGB').convert('P', palette=Image.ADAPTIVE)
+        map.save('./map.gif')
+        os.remove('./map.png')
 
